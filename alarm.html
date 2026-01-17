@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alarm - School Alarm System</title>
+</head>
+
+<body>
+    <div class="alarm-container">
+        <h1>Alarm System</h1>
+        <button id="backBtn" onclick="window.location.href='/dashboard.html'">Back to Dashboard</button>
+        
+        <div id="alarmActionsSection" style="margin-top: 20px;">
+            <h2>Alarm Status</h2>
+            <div id="alarmInfo"></div>
+            <div id="messageSection" style="margin-top: 20px; display: none;">
+                <input type="text" id="messageInput" placeholder="Enter message" />
+                <button id="sendMessageBtn">Send Message</button>
+            </div>
+            <div id="actionButtons" style="margin-top: 20px; display: none;">
+                <button id="emergencyBtn" style="background-color: red; color: white; padding: 10px 20px; margin-right: 10px;">Emergency Button</button>
+                <button id="falseAlarmBtn" style="background-color: orange; color: white; padding: 10px 20px;">False Alarm</button>
+            </div>
+            <div id="alarmError" style="color: red; margin-top: 10px;"></div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const schoolId = urlParams.get('schoolId');
+        const alarmIdParam = urlParams.get('alarmId');
+        let currentAlarmId = alarmIdParam;
+
+        if (!schoolId) {
+            document.getElementById('alarmError').textContent = 'No school ID provided';
+            document.getElementById('alarmActionsSection').style.display = 'none';
+        } else {
+            // Automatically create/get alarm when page loads
+            window.addEventListener('load', async () => {
+                await createOrGetAlarm();
+            });
+        }
+
+        async function createOrGetAlarm() {
+            try {
+                const response = await fetch(`/alarm/${schoolId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        emergency: false,
+                        message: {
+                            type: '',
+                            additionalInfo: ''
+                        },
+                        status: 'ongoing'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentAlarmId = data.alarm.id;
+                    displayAlarmInfo(data.alarm);
+                    document.getElementById('alarmActionsSection').style.display = 'block';
+                    document.getElementById('messageSection').style.display = 'block';
+                    document.getElementById('actionButtons').style.display = 'block';
+                    document.getElementById('alarmError').textContent = '';
+                } else {
+                    document.getElementById('alarmError').textContent = data.message || 'Failed to create alarm';
+                }
+            } catch (err) {
+                document.getElementById('alarmError').textContent = 'Error: ' + err.message;
+            }
+        }
+
+        function displayAlarmInfo(alarm) {
+            let html = '<p><strong>Alarm ID:</strong> ' + alarm.id + '</p>';
+            html += '<p><strong>School ID:</strong> ' + alarm.schoolId + '</p>';
+            html += '<p><strong>Status:</strong> ' + alarm.status + '</p>';
+            html += '<p><strong>Emergency:</strong> ' + alarm.emergency + '</p>';
+            html += '<p><strong>Message:</strong> ' + (alarm.message?.type || 'None') + '</p>';
+            document.getElementById('alarmInfo').innerHTML = html;
+        }
+
+        document.getElementById('sendMessageBtn').addEventListener('click', async () => {
+            const message = document.getElementById('messageInput').value;
+            
+            if (!message.trim()) {
+                document.getElementById('alarmError').textContent = 'Please enter a message';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/alarm/${schoolId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: {
+                            type: message,
+                            additionalInfo: ''
+                        },
+                        status: 'ongoing'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('alarmError').textContent = 'Message sent!';
+                    document.getElementById('alarmError').style.color = 'green';
+                    document.getElementById('messageInput').value = '';
+                    displayAlarmInfo(data.alarm);
+                } else {
+                    document.getElementById('alarmError').textContent = data.message || 'Failed to send message';
+                    document.getElementById('alarmError').style.color = 'red';
+                }
+            } catch (err) {
+                document.getElementById('alarmError').textContent = 'Error: ' + err.message;
+                document.getElementById('alarmError').style.color = 'red';
+            }
+        });
+
+        document.getElementById('emergencyBtn').addEventListener('click', async () => {
+            if (!currentAlarmId) {
+                document.getElementById('alarmError').textContent = 'No alarm created yet';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/alarm/${schoolId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        emergency: true,
+                        status: 'ongoing'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('alarmError').textContent = 'Emergency activated!';
+                    document.getElementById('alarmError').style.color = 'red';
+                    displayAlarmInfo(data.alarm);
+                } else {
+                    document.getElementById('alarmError').textContent = data.message || 'Failed to activate emergency';
+                    document.getElementById('alarmError').style.color = 'red';
+                }
+            } catch (err) {
+                document.getElementById('alarmError').textContent = 'Error: ' + err.message;
+                document.getElementById('alarmError').style.color = 'red';
+            }
+        });
+
+        document.getElementById('falseAlarmBtn').addEventListener('click', async () => {
+            if (!currentAlarmId) {
+                document.getElementById('alarmError').textContent = 'No alarm created yet';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/alarm/${currentAlarmId}/false`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        authority: 'STUDENT'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('alarmError').textContent = 'Marked as false alarm! Returning to dashboard...';
+                    document.getElementById('alarmError').style.color = 'green';
+                    
+                    // Wait 1 second then return to dashboard
+                    setTimeout(() => {
+                        window.location.href = '/dashboard.html';
+                    }, 1000);
+                } else {
+                    document.getElementById('alarmError').textContent = data.message || 'Failed to mark as false';
+                    document.getElementById('alarmError').style.color = 'red';
+                }
+            } catch (err) {
+                document.getElementById('alarmError').textContent = 'Error: ' + err.message;
+                document.getElementById('alarmError').style.color = 'red';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - School Alarm System</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <h1>Dashboard</h1>
+        <button id="logoutBtn">Logout</button>
+        <div id="dashboardContent"></div>
+        <div id="dashboardError" style="color: red;"></div>
+    </div>
+
+    <script>
+        const username = localStorage.getItem('username');
+        const authority = localStorage.getItem('authority');
+        
+        if (!username || !authority) {
+            window.location.href = '/index.html';
+        }
+
+        // Connect to Socket.io
+        const socket = io();
+
+        // Listen for refresh events
+        socket.on('refresh-page', () => {
+            console.log('Refresh event received, reloading dashboard...');
+            // Reload the dashboard data
+            loadDashboard();
+        });
+
+        async function loadDashboard() {
+            try {
+                if (authority === 'ADMIN') {
+                    // Admin sees all students and staff
+                    const response = await fetch('/dashboard/admin');
+                    const data = await response.json();
+                    console.log('Admin dashboard response:', data);
+                    if (data.success) {
+                        displayAdminDashboard(data);
+                    } else {
+                        document.getElementById('dashboardError').textContent = 'Failed to load admin dashboard: ' + data.message;
+                    }
+                } else if (authority === 'STAFF') {
+                    // Get staff member's department
+                    const userResponse = await fetch(`/user/${username}`);
+                    const userData = await userResponse.json();
+                    console.log('User data response:', userData);
+                    
+                    if (userData.success && userData.user.department) {
+                        const staffResponse = await fetch(`/dashboard/staff/${userData.user.department}`);
+                        const staffData = await staffResponse.json();
+                        console.log('Staff dashboard response:', staffData);
+                        
+                        if (staffData.success) {
+                            displayStaffDashboard(staffData);
+                        } else {
+                            document.getElementById('dashboardError').textContent = 'Failed to load staff dashboard: ' + staffData.message;
+                        }
+                    } else {
+                        document.getElementById('dashboardError').textContent = 'Could not determine staff department: ' + (userData.message || 'Unknown error');
+                    }
+                } else if (authority === 'STUDENT') {
+                    // Student sees only their own data
+                    const studentResponse = await fetch(`/dashboard/student/${username}`);
+                    const studentData = await studentResponse.json();
+                    console.log('Student dashboard response:', studentData);
+                    
+                    if (studentData.success) {
+                        displayStudentDashboard(studentData);
+                    } else {
+                        document.getElementById('dashboardError').textContent = 'Failed to load student dashboard: ' + studentData.message;
+                    }
+                }
+            } catch (err) {
+                console.error('Error:', err);
+                document.getElementById('dashboardError').textContent = 'Error loading dashboard: ' + err.message;
+            }
+        }
+
+        window.addEventListener('load', async () => {
+            loadDashboard();
+        });
+
+        function displayAdminDashboard(data) {
+            let html = '<h2>Admin Dashboard</h2>';
+            html += `<p>Total Students: ${data.totalStudents}</p>`;
+            html += `<p>Total Staff: ${data.staffs.length}</p>`;
+            html += `<p>Ongoing Alarms: ${data.ongoingAlarmCount}</p>`;
+            
+            html += '<h3>All Staff</h3>';
+            if (data.staffs && data.staffs.length > 0) {
+                html += '<ul>';
+                data.staffs.forEach(staff => {
+                    html += `<li>${staff.name} (${staff.schoolId}) - ${staff.department}</li>`;
+                });
+                html += '</ul>';
+            } else {
+                html += '<p>No staff</p>';
+            }
+
+            html += '<h3>All Students</h3>';
+            if (data.students && data.students.length > 0) {
+                html += '<ul>';
+                data.students.forEach(student => {
+                    html += `<li>${student.name} (${student.schoolId}) - ${student.department}</li>`;
+                });
+                html += '</ul>';
+            } else {
+                html += '<p>No students</p>';
+            }
+            
+            html += '<h3>Ongoing Alarms</h3>';
+            if (data.ongoingAlarms && data.ongoingAlarms.length > 0) {
+                html += '<ul>';
+                data.ongoingAlarms.forEach(alarm => {
+                    html += `<li>School ID: ${alarm.schoolId}, Emergency: ${alarm.emergency}, Status: ${alarm.status}</li>`;
+                });
+                html += '</ul>';
+            } else {
+                html += '<p>No ongoing alarms</p>';
+            }
+
+            document.getElementById('dashboardContent').innerHTML = html;
+        }
+
+        function displayStaffDashboard(data) {
+            let html = '<h2>Staff Dashboard - ' + data.department + '</h2>';
+            html += `<p>Total Students: ${data.totalStudents}</p>`;
+            html += `<p>Ongoing Alarms: ${data.ongoingAlarmCount}</p>`;
+            
+            html += '<h3>Students in Your Department</h3>';
+            if (data.students && data.students.length > 0) {
+                html += '<ul>';
+                data.students.forEach(student => {
+                    const alarmStatus = student.ongoingAlarm ? 'Yes' : 'No';
+                    html += `<li>${student.name} (${student.schoolId}) - Alarm: ${alarmStatus}</li>`;
+                });
+                html += '</ul>';
+            } else {
+                html += '<p>No students in your department</p>';
+            }
+
+            html += '<h3>Ongoing Alarms in Your Department</h3>';
+            if (data.ongoingAlarms && data.ongoingAlarms.length > 0) {
+                html += '<ul>';
+                data.ongoingAlarms.forEach(alarm => {
+                    html += `<li>School ID: ${alarm.schoolId}, Emergency: ${alarm.emergency}</li>`;
+                });
+                html += '</ul>';
+            } else {
+                html += '<p>No ongoing alarms</p>';
+            }
+
+            document.getElementById('dashboardContent').innerHTML = html;
+        }
+
+        function displayStudentDashboard(data) {
+            let html = '<h2>Student Dashboard</h2>';
+            html += `<p>Name: ${data.student.name}</p>`;
+            html += `<p>School ID: ${data.student.schoolId}</p>`;
+            html += `<p>Department: ${data.student.department}</p>`;
+            html += `<p>Email: ${data.student.email}</p>`;
+            html += `<p>Emergency Contact: ${data.student.emergencyContact}</p>`;
+            
+            if (data.ongoingAlarm) {
+                html += '<h3>Your Ongoing Alarm</h3>';
+                html += `<p>Status: ${data.ongoingAlarm.status}</p>`;
+                html += `<p>Emergency: ${data.ongoingAlarm.emergency}</p>`;
+                html += `<button onclick="window.location.href='/alarm.html?schoolId=${data.student.schoolId}&alarmId=${data.ongoingAlarm.id}'">Manage Alarm</button>`;
+            } else {
+                html += '<p>No ongoing alarm</p>';
+                html += `<button id="makeAlarmBtn" onclick="makeAlarm('${data.student.schoolId}')">Create Alarm</button>`;
+            }
+
+            document.getElementById('dashboardContent').innerHTML = html;
+        }
+
+        function makeAlarm(schoolId) {
+            if (confirm('Are you sure you want to create an alarm?')) {
+                window.location.href = `/alarm.html?schoolId=${schoolId}`;
+            }
+        }
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('username');
+            localStorage.removeItem('authority');
+            window.location.href = '/index.html';
+        });
+    </script>
+</body>
+</html>
