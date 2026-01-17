@@ -3,7 +3,7 @@ const http = require('http');
 const path = require('path');
 require('dotenv').config();
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '.')));
@@ -12,7 +12,6 @@ app.use(express.static(path.join(__dirname, '.')));
 const { Server } = require('socket.io');
 const ioServer = http.createServer(app);
 const io = new Server(ioServer);
-
 io.on('connection', socket => {
   console.log('Client connected');
 });
@@ -942,11 +941,155 @@ app.delete('/alarm/:alarmId', async (req, res) => {
             });
         }
 
+        io.emit('refresh-page');
         res.status(200).json({
             success: true,
             message: 'Alarm deleted successfully'
         });
+        
     } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: 'Database error: ' + (err.message || err)
+        });
+    }
+});
+
+// Change password for users
+app.post('/user/change-password', async (req, res) => {
+    const { username, oldPassword, newPassword } = req.body;
+
+    if (!username || !oldPassword || !newPassword) {
+        return res.status(400).json({
+            success: false,
+            message: 'username, oldPassword, and newPassword are required'
+        });
+    }
+
+    if (!db) {
+        return res.status(503).json({ 
+            success: false, 
+            message: 'Database not connected' 
+        });
+    }
+
+    try {
+        const user = await db.collection('users').findOne({ username: username });
+        
+        // check if password is correct
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        const valid = await bcrypt.compare(oldPassword, user.password);
+
+        if (!valid) {
+            return res.status(401).json({
+                success: false,
+                message: 'Old password is incorrect'
+            });
+        }
+
+        // hash new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // update in database
+        await db.collection('users').updateOne(
+            { username: username }, 
+            { $set: { password: hashedPassword } }
+        );
+
+        res.status(200).json({
+            success: true,
+            message: 'Password changed successfully'
+        });
+    }
+
+    catch (err) {
+        res.status(500).json({
+            success: false,
+            message: 'Database error: ' + (err.message || err)
+        })
+    }
+});
+
+// Delete account for students and staff - ADMIN or STAFF only
+app.delete('/user/:username', async (req, res) => {
+    const { authority, deleteCode } = req.body;
+    const { username } = req.params;
+
+    if ( authority != 'ADMIN' && authority != 'STAFF') {
+        return res.status(403).json({
+            success: false,
+            message: 'Unauthorized: Only ADMIN or STAFF can delete users'
+        });
+    }
+
+    if ( deleteCode !== process.env.DELETE_CODE ) {
+        return res.status(403).json({
+            success: false,
+            message: 'Unauthorized: Invalid delete code'
+        });
+    }
+
+    if (!db) {
+        return res.status(503).json({ 
+            success: false, 
+            message: 'Database not connected' 
+        });
+    }
+
+    if ( !username ) {
+        return res.status(400).json({
+            success: false,
+            message: 'Username is required'
+        });
+    }
+
+    try {
+        const user = await db.collection('users').findOne({ username: username });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        if (user.authority === 'ADMIN') {
+            return res.status(403).json({
+                success: false,
+                message: 'Unauthorized: Cannot delete ADMIN accounts'
+            });
+        }
+
+        if (user.authority === 'STAFF' && authority !== 'ADMIN') {
+            return res.status(403).json({
+                success: false,
+                message: 'Unauthorized: Only ADMIN can delete STAFF accounts'
+            });
+        }
+
+        const result = await db.collection('users').deleteOne({ username: username });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        io.emit('refresh-page');
+        res.status(200).json({
+            success: true,
+            message: 'User deleted successfully'
+        });
+    }
+
+    catch (err) {
         res.status(500).json({
             success: false,
             message: 'Database error: ' + (err.message || err)
