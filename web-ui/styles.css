@@ -1,0 +1,463 @@
+:root {
+  
+    /* MAIN BRAND COLOR (Header & Footer) */
+    --lnhs-maroon: #800020;  /* Deep Burgundy */
+    
+    /* EMERGENCY LEVEL COLORS (From the App UI) */
+    --level-1-yellow: #FFEB3B; /* Bright Warning Yellow */
+    --level-2-orange: #E65100; /* Deep Safety Orange */
+    --level-3-red: #B71C1C;    /* Critical Red */
+
+    /* TEXT COLORS */
+    --text-white: #ffffff;
+    --text-black: #000000;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background-color: #f4f4f4;
+}
+
+.main-header {
+    background-color: var(--lnhs-maroon);
+    color: var(--text-white);
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.log-table {
+    width: 90%;
+    margin: 30px auto;
+    border-collapse: collapse;
+    background: white;
+}
+
+.log-table th {
+    background-color: #1a1a1a;
+    color: white;
+    padding: 12px;
+}
+
+.log-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+
+.btn-resolved { background-color: #7cfc00; border: none; padding: 5px 10px; cursor: pointer; border-radius: 5px;}
+.btn-delete { background-color: #ff0000; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 5px;}
+
+/* =========================
+   LOGIN PAGE STYLES
+   ========================= */
+
+.login-body {
+    height: 100vh; /* Full screen height */
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center;     /* Center vertically */
+    background-color: #3a3939;
+}
+
+.login-card {
+    background: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    width: 100%;
+    max-width: 400px; /* Prevents it from getting too wide */
+    text-align: center;
+    border-top: 5px solid var(--lnhs-maroon); /* The maroon accent on top */
+}
+
+.login-title {
+    color: var(--lnhs-maroon);
+    margin-bottom: 5px;
+}
+
+.login-subtitle {
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 0.9em;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 0.9em;
+    color: #333;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box; /* Ensures padding doesn't break width */
+}
+
+.btn-login {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--lnhs-maroon);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-login:hover {
+    background-color: #5a0016; /* Darker maroon on hover */
+}
+
+.footer-text {
+    margin-top: 20px;
+    font-size: 0.7em;
+    color: #aaa;
+}
+
+/* =========================
+   ALARM PAGE STYLES
+   ========================= */
+
+/* --- 1. BASE LAYOUT (Remains the same for all levels) --- */
+.alarm-body {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #1a1a1a;
+    font-family: Arial, sans-serif;
+}
+
+.alarm-container {
+    background-color: white;
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+    border-radius: 20px;
+    overflow: hidden;
+    /* The animation is now handled by the specific level class */
+}
+
+.alarm-header {
+    padding: 30px 20px;
+    color: white; /* Text is always white on the colored header */
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.alarm-icon svg {
+    width: 60px;
+    height: 60px;
+    stroke-width: 2.5;
+}
+
+.alarm-details {
+    padding: 30px 20px;
+}
+
+.student-info, .location-info {
+    font-size: 1.1rem;
+    margin: 8px 0;
+    color: #444;
+}
+
+.status-message {
+    margin-top: 15px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.alarm-actions {
+    padding-bottom: 30px;
+}
+
+.btn-acknowledge {
+    padding: 12px 40px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: transform 0.2s;
+    display: inline-block;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-acknowledge:hover {
+    transform: scale(1.05);
+}
+
+/* --- 2. THE FORMULA (Level Specific Styles) --- */
+
+/* === LEVEL 1: YELLOW (Matches your App Card) === */
+.style-level-1 .alarm-header {
+    background-color: #FFD700; /* Gold/Yellow */
+    color: #333; /* Dark text reads better on yellow */
+}
+
+.style-level-1 .alarm-icon svg {
+    stroke: #333; /* Dark Icon */
+}
+
+.style-level-1 .status-message {
+    color: #FBC02D; /* Darker Yellow text */
+}
+
+.style-level-1 .btn-acknowledge {
+    background-color: #FFD700;
+    color: #333;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+}
+
+/* The Yellow Pulse Animation */
+.style-level-1 {
+    box-shadow: 0 0 0 0 rgba(255, 215, 0, 1);
+    animation: pulse-yellow 1.5s infinite;
+}
+
+@keyframes pulse-yellow {
+    0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); }
+    70% { box-shadow: 0 0 0 20px rgba(255, 215, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+} 
+
+/* === LEVEL 2: ORANGE (Matches your App Card) === */
+.style-level-2 .alarm-header {
+    background-color: #E65100; /* Deep Safety Orange */
+    color: #fff;
+}
+
+.style-level-2 .alarm-icon svg {
+    stroke: #fff;
+}
+
+.style-level-2 .status-message {
+    color: #E65100;
+}
+
+.style-level-2 .btn-acknowledge {
+    background-color: #E65100;
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(230, 81, 0, 0.4);
+}
+
+/* The Orange Pulse Animation */
+.style-level-2 {
+    box-shadow: 0 0 0 0 rgba(230, 81, 0, 1);
+    animation: pulse-orange 1.5s infinite;
+}
+
+@keyframes pulse-orange {
+    0% { box-shadow: 0 0 0 0 rgba(230, 81, 0, 0.7); }
+    70% { box-shadow: 0 0 0 20px rgba(230, 81, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(230, 81, 0, 0); }
+} 
+
+/* === LEVEL 3: RED (Matches your App Card) === */
+.style-level-3 .alarm-header {
+    background-color: #B71C1C; /* Deep Red */
+    color: #fff;
+}
+
+.style-level-3 .alarm-icon svg {
+    stroke: #fff;
+}
+
+.style-level-3 .status-message {
+    color: #B71C1C;
+}
+
+.style-level-3 .btn-acknowledge {
+    background-color: #B71C1C;
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(183, 28, 28, 0.4);
+}
+
+/* The Red Pulse Animation */
+.style-level-3 {
+    box-shadow: 0 0 0 0 rgba(183, 28, 28, 1);
+    animation: pulse-red 1.5s infinite;
+}
+
+@keyframes pulse-red {
+    0% { box-shadow: 0 0 0 0 rgba(183, 28, 28, 0.7); }
+    70% { box-shadow: 0 0 0 20px rgba(183, 28, 28, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(183, 28, 28, 0); }
+} 
+
+
+/* BADGE STYLES for Dashboard Table */
+.badge {
+    padding: 8px 12px;
+    border-radius: 20px; /* Makes it pill-shaped */
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    display: inline-block;
+    min-width: 80px; /* Ensures they are all the same width */
+    color: #333; /* Default text color */
+}
+
+/* Specific Colors to match the App */
+.badge-level1 {
+    background-color: #FFEB3B; /* Yellow */
+    color: black;
+}
+
+.badge-level2 {
+    background-color: #E65100; /* Orange */
+    color: white; /* White text looks better on orange */
+}
+
+.badge-level3 {
+    background-color: #B71C1C; /* Red */
+    color: white; /* White text looks better on red */
+}
+
+
+/* =========================================
+   UNIVERSAL ALARM PAGE STYLES
+   ========================================= */
+
+.alarm-body {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #1a1a1a;
+    font-family: Arial, sans-serif;
+    margin: 0;
+}
+
+.alarm-card {
+    background: white;
+    width: 90%;
+    max-width: 450px;
+    border-radius: 20px;
+    overflow: hidden;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+/* The Top Section (Color Block) */
+.alarm-header-block {
+    padding: 40px 20px;
+    color: white; /* Default text color */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.alarm-icon svg {
+    width: 80px;
+    height: 80px;
+    stroke-width: 2.5;
+    fill: none;
+    stroke: currentColor; /* Takes the text color */
+}
+
+.alarm-title {
+    font-size: 2.5rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    margin: 0;
+}
+
+/* The Bottom Section (White Block) */
+.alarm-content {
+    padding: 30px 20px;
+}
+
+.student-id {
+    font-size: 1.2rem;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+.location {
+    font-size: 1.2rem;
+    color: #333;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.status-text {
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+}
+
+.btn-acknowledge {
+    display: inline-block;
+    padding: 15px 30px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1rem;
+    transition: transform 0.2s;
+    border: none;
+    cursor: pointer;
+    width: 80%;
+}
+
+.btn-acknowledge:hover {
+    transform: scale(1.05);
+    filter: brightness(0.95);
+}
+
+/* =========================================
+   LEVEL SPECIFIC THEMES
+   ========================================= */
+
+/* LEVEL 1: YELLOW */
+.theme-level-1 .alarm-header-block {
+    background-color: #FFD700;
+    color: #ffffff; /* Dark text for contrast on yellow */
+}
+.theme-level-1 .status-text { color: #FBC02D; }
+.theme-level-1 .btn-acknowledge { background-color: #FFD700; color: #222; }
+.theme-level-1 .alarm-card { animation: pulse-yellow 1.5s infinite; }
+
+/* LEVEL 2: ORANGE */
+.theme-level-2 .alarm-header-block {
+    background-color: #E65100;
+    color: white;
+}
+.theme-level-2 .status-text { color: #E65100; }
+.theme-level-2 .btn-acknowledge { background-color: #E65100; color: white; }
+.theme-level-2 .alarm-card { animation: pulse-orange 1.5s infinite; }
+
+/* LEVEL 3: RED */
+.theme-level-3 .alarm-header-block {
+    background-color: #B71C1C;
+    color: white;
+}
+.theme-level-3 .status-text { color: #B71C1C; }
+.theme-level-3 .btn-acknowledge { background-color: #B71C1C; color: white; }
+.theme-level-3 .alarm-card { animation: pulse-red 0.8s infinite; } /* Faster pulse! */
+
+/* ANIMATIONS */
+@keyframes pulse-yellow { 0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(0,0,0,0); } 100% { box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
+@keyframes pulse-orange { 0% { box-shadow: 0 0 0 0 rgba(230, 81, 0, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(0,0,0,0); } 100% { box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
+@keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(183, 28, 28, 0.7); } 70% { box-shadow: 0 0 0 30px rgba(0,0,0,0); } 100% { box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
